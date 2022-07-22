@@ -5,6 +5,6 @@ class NewTasksScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(child: Text('Tasks'));
+    return Container(color: Colors.teal,child: const Center(child: Text('Tasks')));
   }
 }
