@@ -5,17 +5,19 @@ import 'package:to_do/presentation_layer/Screens/archeive_atsks/archeive_screen.
 import 'package:to_do/presentation_layer/Screens/done_tasks/done_screen.dart';
 import 'package:to_do/presentation_layer/Screens/new_tasks/new_tasks_screen.dart';
 import 'package:to_do/presentation_layer/widgets/SharedWidgets%20-%20Copy.dart';
+import 'package:to_do/presentation_layer/widgets/constants.dart';
 
 class HomeLayout extends StatefulWidget {
-  const HomeLayout({Key? key}) : super(key: key);
+  const HomeLayout({Key key}) : super(key: key);
 
   @override
   State<HomeLayout> createState() => _HomeLayoutState();
 }
 
 class _HomeLayoutState extends State<HomeLayout> {
-  late Database database;
-  var insertValue;
+  Database database;
+  Future insertValue;
+
 
   var titleController = TextEditingController();
   var timeController = TextEditingController();
@@ -26,7 +28,7 @@ class _HomeLayoutState extends State<HomeLayout> {
   var scaffoldKey = GlobalKey<ScaffoldState>();
   var formKey = GlobalKey<FormState>();
   int currentIndex = 0;
-  List<Widget> screens = const [
+  List<Widget> screens =  [
     NewTasksScreen(),
     DoneTasksScreen(),
     ArchivedTasksScreen(),
@@ -47,23 +49,30 @@ class _HomeLayoutState extends State<HomeLayout> {
         elevation: 0.0,
         //centerTitle: true,
       ),
-      body: screens[currentIndex],
+      body: tasks.length==0?const Center(child:  CircularProgressIndicator()):screens[currentIndex],
       floatingActionButton: FloatingActionButton(
         onPressed: () {
+          //insertToDataBase(title: 'mohamed', time: '2002', date: '11:00').then((value){print(value);});
           if (isBottomSheetShown) {
             insertToDataBase(
-              time:timeController.text,
-              date:dateController.text ,
+              time: timeController.text,
+              date: dateController.text,
               title: titleController.text,
-            );
-            Navigator.pop(context);
-            isBottomSheetShown = !isBottomSheetShown;
-            setState(() {
-              fabIcon = Icons.edit;
+            ).then((value) {
+              print('insert Done');
             });
+            getDataFromDatabase(database).then((value){
+              tasks = value;
+              Navigator.pop(context);
+              print('get news data');
+              isBottomSheetShown = !isBottomSheetShown;
+              setState(() {
+                fabIcon = Icons.edit;
+              });
+            });
+
           } else {
-            scaffoldKey.currentState?.showBottomSheet(
-                    (context) => Container(
+            scaffoldKey.currentState?.showBottomSheet((context) => Container(
                   color: Colors.teal,
                   child: Padding(
                     padding: const EdgeInsets.all(10.0),
@@ -104,7 +113,7 @@ class _HomeLayoutState extends State<HomeLayout> {
                                   initialTime: TimeOfDay.now(),
                                 ).then((value) {
                                   timeController.text =
-                                      value!.format(context).toString();
+                                      value.format(context).toString();
                                   print(value.format(context));
                                 });
                               },
@@ -118,7 +127,6 @@ class _HomeLayoutState extends State<HomeLayout> {
                               label: 'date title',
                               type: TextInputType.datetime,
                               onTap: () {
-                                print('object');
                                 showDatePicker(
                                   context: context,
                                   initialDate: DateTime.now(),
@@ -126,7 +134,7 @@ class _HomeLayoutState extends State<HomeLayout> {
                                   lastDate: DateTime.parse('2022-12-22'),
                                 ).then((value) {
                                   dateController.text =
-                                      DateFormat.yMMMd().format(value!);
+                                      DateFormat.yMMMd().format(value);
                                 });
                               },
                               prefix: Icons.calendar_today,
@@ -181,7 +189,12 @@ class _HomeLayoutState extends State<HomeLayout> {
         });
       },
       onOpen: (database) {
+        getDataFromDatabase(database).then((value){
+          tasks = value;
+          print(tasks);
+        });
         print('database opened');
+        print('getDataFromDatabase is doned');
       },
     ).catchError((err) {
       print(err.toString());
@@ -190,19 +203,22 @@ class _HomeLayoutState extends State<HomeLayout> {
 
   //function to insert data in table
   Future insertToDataBase(
-      {required String? title,
-      required String? time,
-      required String? date})  {
-    return  database.transaction((txn){
+      {@required String title,
+      @required String time,
+      @required String date}) async {
+    return  await database.transaction((txn) {
       txn
           .rawInsert(
               'INSERT INTO tasks(title,date,time,status) VALUES("$title","$date","$time","new")')
           .then((value) {
         print('inserted successfully');
       }).catchError((err) {
-        print(err.toString());
+        print('error is : ${err.toString()}');
       });
-      return insertValue;
     });
+  }
+
+  Future<List<Map>> getDataFromDatabase(database) async {
+    return await database.rawQuery('SELECT * FROM tasks');
   }
 }

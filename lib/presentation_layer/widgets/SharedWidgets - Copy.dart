@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 Widget defaultButton({
   double wid = double.infinity,
   double r = 10.0,
-  required String text,
+  @required String text,
   bool isUpper = true,
   Color back = Colors.blue,
-  required Function function,
+  @required Function function,
 }) =>
     Container(
       width: wid,
@@ -30,14 +30,14 @@ Widget defaultButton({
 Widget defaultFormField({
   //Validation is not correct
   //required Function validate,
-  required controller,
-  required label,
-  required prefix,
-  required type,
+  @required controller,
+  @required label,
+  @required prefix,
+  @required type,
   suffix,
   suffixPressed,
   hint = '',
-   onTap,
+  onTap,
   onSubmit,
   onChange,
   isPassword = false,
@@ -75,15 +75,42 @@ Widget defaultFormField({
     );
 
 void navigateTo(context, widget) => Navigator.push(
-  context,
-  MaterialPageRoute(
-    builder: (context) => widget,
-  ),
-);
-
+      context,
+      MaterialPageRoute(
+        builder: (context) => widget,
+      ),
+    );
 
 Widget buildSeparator() => Container(
-  height: 1.0,
-  width: double.infinity,
-  color: Colors.grey[300],
-);
+      height: 1.0,
+      width: double.infinity,
+      color: Colors.grey[300],
+    );
+
+Widget buildTaskItem({
+  @required time,
+  @required date,
+  @required title,
+}) {
+  return Padding(
+    padding: const EdgeInsets.all(20.0),
+    child: Row(
+      children: [
+        CircleAvatar(
+          radius: 40.0,
+          child: Text("$time"),
+        ),
+        SizedBox(
+          width: 20.0,
+        ),
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('$title'),
+            Text('$date'),
+          ],
+        )
+      ],
+    ),
+  );
+}
