@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:to_do/business_logic_lauyer/shared/app_cubit.dart';
 
 Widget defaultButton({
   double wid = double.infinity,
@@ -91,6 +93,8 @@ Widget buildTaskItem({
   @required time,
   @required date,
   @required title,
+  @required int index,
+  @required context
 }) {
   return Padding(
     padding: const EdgeInsets.all(20.0),
@@ -99,17 +103,35 @@ Widget buildTaskItem({
         CircleAvatar(
           radius: 40.0,
           child: Text("$time"),
+          backgroundColor: Colors.teal,
         ),
-        SizedBox(
+        const SizedBox(
           width: 20.0,
         ),
-        Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text('$title'),
-            Text('$date'),
-          ],
-        )
+        Expanded(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('$title'),
+              Text('$date'),
+            ],
+          ),
+        ),
+        const SizedBox(
+          width: 20.0,
+        ),
+        IconButton(
+            onPressed: (){
+              BlocProvider.of<AppCubit>(context).updateData(status: 'done', id:BlocProvider.of<AppCubit>(context).tasks[index]['id'] );
+            },
+            icon: const Icon(Icons.check_circle_outline,color: Colors.teal,),
+        ),
+        IconButton(
+            onPressed: (){
+              BlocProvider.of<AppCubit>(context).updateData(status: 'archive', id:BlocProvider.of<AppCubit>(context).tasks[index]['id'] );
+            },
+            icon: const Icon(Icons.archive_outlined,color: Colors.teal,),
+        ),
       ],
     ),
   );
